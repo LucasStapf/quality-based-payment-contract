@@ -4,10 +4,12 @@ pragma solidity ^0.8.0;
 contract QualityBasedPaymentContract {
     address public owner;
     address public supplier;
+
     uint public paymentAmount;
     bool public paymentReleased = false;
-    bool public savedDeliveryConditions = false;
+
     uint public deliveryDeadline; // Prazo máximo para entrega
+    bool public savedDeliveryConditions = false;
 
     // Condições de transporte
     uint public minTemperature = 2; // Temperatura mínima permitida (em °C)
@@ -30,7 +32,7 @@ contract QualityBasedPaymentContract {
     constructor(address _supplier, uint _paymentAmount, uint _deliveryDeadline) payable {
         owner = msg.sender;
         supplier = _supplier;
-        paymentAmount = _paymentAmount * 1e18;
+        paymentAmount = _paymentAmount * 1e18; // Converte para Wei
         deliveryDeadline = _deliveryDeadline;
     }
 
@@ -64,13 +66,12 @@ contract QualityBasedPaymentContract {
     function releasePayment() public onlyOwner payable {
         require(savedDeliveryConditions, "Condicoes de entrega nao foram registradas.");
         require(!paymentReleased, "Pagamento ja liberado.");
-        //require(block.timestamp <= deliveryDeadline, "Entrega atrasada. Pagamento bloqueado.");
         
         uint penaltyAmount = calculatePenalty();
         uint finalPayment = paymentAmount > penaltyAmount ? paymentAmount - penaltyAmount : 0;
 
         paymentReleased = true;
-        payable(supplier).transfer(paymentAmount);
+        payable(supplier).transfer(finalPayment);
         
         emit PaymentReleased(finalPayment, supplier);
     }
