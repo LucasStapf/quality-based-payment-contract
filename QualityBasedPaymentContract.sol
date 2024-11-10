@@ -72,6 +72,7 @@ contract QualityBasedPaymentContract {
 
         paymentReleased = true;
         payable(supplier).transfer(finalPayment);
+        payable(owner).transfer(penaltyAmount);
         
         emit PaymentReleased(finalPayment, supplier);
     }
